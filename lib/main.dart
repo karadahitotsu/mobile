@@ -19,17 +19,22 @@ class MyApp extends StatelessWidget {
             primary: Colors.grey.shade900, //primary
             brightness: Brightness.dark,//brightness
             background: Colors.black, //background
-            onPrimary: Colors.grey.shade500, //on primary
-            onSecondary: Colors.black,//idk
-            onBackground: Colors.grey, //idk
+            onPrimary: Colors.red, //button text
+            onSecondary: Colors.green,//idk
+            onBackground: Colors.red, //calendar rows
             onError: Colors.orange, //idk
             error: Colors.blue, //idk
             surface: Colors.grey.shade900, //top title
             onSurface: Colors.amber.shade800, //maincollor
       ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.red, // button text color
+          ),
+        ),
       ),
 
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Diary'),
     );
   }
 }
@@ -46,44 +51,76 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  String selectedWeek = "Выберите неделю";
+  @override
+  void initState() {
+    super.initState();
+    selectedWeek = _calculateWeek(DateTime.now());
+  }
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2023),
+      lastDate: DateTime(2024),
 
-  void _incrementCounter() {
-    setState(() {
 
-      _counter++;
-    });
+    );
+
+    if (picked != null  ) {
+      setState(() {
+        selectedWeek = "Неделя: ${_calculateWeek(picked)}";
+      });
+    }
+  }
+  String _calculateWeek(DateTime date) {
+    DateTime firstDayOfWeek = date.subtract(Duration(days: date.weekday - 1));
+
+    // Найдем последний день текущей недели
+    DateTime lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
+
+    // Преобразуем даты в строки
+    String firstDayString =
+        "${firstDayOfWeek.day}.${firstDayOfWeek.month}.${firstDayOfWeek.year}";
+    String lastDayString =
+        "${lastDayOfWeek.day}.${lastDayOfWeek.month}.${lastDayOfWeek.year}";
+
+    // Возвращаем объединенную строку
+    return '$firstDayString - $lastDayString';
   }
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
 
-        title: Text(widget.title),
+      appBar: AppBar(
+        centerTitle: true,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(widget.title),
+              SizedBox(height: 5),
+              Text(selectedWeek),
+           ],
+          ),
+    IconButton(
+    icon: Icon(Icons.calendar_today),
+    onPressed: () => _selectDate(context),
+    ),
+    ],
+          ),
+
       ),
       body: Center(
 
-        child: Column(
-
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+        child: Text(selectedWeek),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+
+       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
